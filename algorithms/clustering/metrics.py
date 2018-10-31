@@ -67,6 +67,7 @@ class Metrics:
     def inter_cluster_statistic(centroids):
         centers = []
         # cluster = len(centroids)
+
         for c in centroids:
             centers.append(centroids[c])
         centers = np.array(centers, dtype=float)
@@ -323,7 +324,7 @@ class Metrics:
     def maximum_d_b(data, centroids, k, clusters):
         max_distance = 0.0
         for l in range(len(centroids)):
-            if k != l:
+            if k != l and distance.euclidean(centroids[k], centroids[l]) > 0:
                 db = truediv(Metrics.sc_r(centroids, clusters, k) + Metrics.sc_r(centroids, clusters, l), distance.euclidean(centroids[k], centroids[l]))
                 if max_distance < db:
                     max_distance = db
@@ -392,14 +393,15 @@ class Metrics:
         return clusters
 
     @staticmethod
-    def evaluate(metric, dataset, centroids, algorithm=None):
+    def evaluate(metric, dataset, centroids, clusters=None, algorithm=None):
         k = len(centroids)
         aux_centroids = {}
         for idx in range(len(centroids)):
             aux_centroids[idx] = centroids[idx]
             
         centroids = aux_centroids
-        clusters = Metrics.get_clusters(dataset, centroids)
+        if clusters is None:
+            clusters = Metrics.get_clusters(dataset, centroids)
 
         if metric == 'inter-cluster':
             return Metrics.inter_cluster_statistic(centroids)

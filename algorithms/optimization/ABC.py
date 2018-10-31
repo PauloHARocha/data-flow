@@ -27,6 +27,7 @@ class ABC(object):
         self.dim = dim
         self.minf = objective_function.minf
         self.maxf = objective_function.maxf
+        self.metric_type = objective_function.metric_type
         self.n_iter = n_iter
         self.n_eval = n_eval
 
@@ -107,48 +108,86 @@ class ABC(object):
             self.optimum_cost_tracking_eval.append(self.gbest.cost)
             fit = self.calculate_fitness(cost)
 
-            if fit > self.food_sources[fs].fitness:
-                self.food_sources[fs].pos = new_pos
-                self.food_sources[fs].cost = cost
-                self.food_sources[fs].fitness = fit
-                self.food_sources[fs].trials = 0
+            if self.metric_type == 'min':
+                if fit > self.food_sources[fs].fitness:
+                    self.food_sources[fs].pos = new_pos
+                    self.food_sources[fs].cost = cost
+                    self.food_sources[fs].fitness = fit
+                    self.food_sources[fs].trials = 0
+                else:
+                    self.food_sources[fs].trials += 1
             else:
-                self.food_sources[fs].trials += 1
+                if fit < self.food_sources[fs].fitness:
+                    self.food_sources[fs].pos = new_pos
+                    self.food_sources[fs].cost = cost
+                    self.food_sources[fs].fitness = fit
+                    self.food_sources[fs].trials = 0
+                else:
+                    self.food_sources[fs].trials += 1
 
     def onlooker_bee_phase(self):
         t = s = 0
         while t < self.num_fs:
             s = (s + 1) % self.num_fs
             r = np.random.uniform()
+            if self.metric_type == 'min':
+                if r < self.food_sources[s].prob:
+                    t += 1
 
-            if r < self.food_sources[s].prob:
-                t += 1
+                    k = list(range(self.num_fs))
+                    k.remove(s)
+                    k = np.random.choice(np.array(k))
+                    j = np.random.choice(range(self.dim))
+                    phi = np.random.uniform(-1, 1)
 
-                k = list(range(self.num_fs))
-                k.remove(s)
-                k = np.random.choice(np.array(k))
-                j = np.random.choice(range(self.dim))
-                phi = np.random.uniform(-1, 1)
+                    new_pos = np.copy(self.food_sources[s].pos)
+                    new_pos[j] = new_pos[j] + phi * \
+                        (new_pos[j] - self.food_sources[k].pos[j])
 
-                new_pos = np.copy(self.food_sources[s].pos)
-                new_pos[j] = new_pos[j] + phi * \
-                    (new_pos[j] - self.food_sources[k].pos[j])
+                    if new_pos[j] < self.minf:
+                        new_pos[j] = self.minf
+                    elif new_pos[j] > self.maxf:
+                        new_pos[j] = self.maxf
+                    cost = self.objective_function(new_pos)
+                    self.optimum_cost_tracking_eval.append(self.gbest.cost)
+                    fit = self.calculate_fitness(cost)
 
-                if new_pos[j] < self.minf:
-                    new_pos[j] = self.minf
-                elif new_pos[j] > self.maxf:
-                    new_pos[j] = self.maxf
-                cost = self.objective_function(new_pos)
-                self.optimum_cost_tracking_eval.append(self.gbest.cost)
-                fit = self.calculate_fitness(cost)
+                    if fit > self.food_sources[s].fitness and (self.food_sources[s].cost - cost) >= 0.0001:
+                        self.food_sources[s].pos = new_pos
+                        self.food_sources[s].cost = cost
+                        self.food_sources[s].fitness = fit
+                        self.food_sources[s].trials = 0
+                    else:
+                        self.food_sources[s].trials += 1
+            else:
+                if r > self.food_sources[s].prob:
+                    t += 1
 
-                if fit > self.food_sources[s].fitness and (self.food_sources[s].cost - cost) >= 0.0001:
-                    self.food_sources[s].pos = new_pos
-                    self.food_sources[s].cost = cost
-                    self.food_sources[s].fitness = fit
-                    self.food_sources[s].trials = 0
-                else:
-                    self.food_sources[s].trials += 1
+                    k = list(range(self.num_fs))
+                    k.remove(s)
+                    k = np.random.choice(np.array(k))
+                    j = np.random.choice(range(self.dim))
+                    phi = np.random.uniform(-1, 1)
+
+                    new_pos = np.copy(self.food_sources[s].pos)
+                    new_pos[j] = new_pos[j] + phi * \
+                        (new_pos[j] - self.food_sources[k].pos[j])
+
+                    if new_pos[j] < self.minf:
+                        new_pos[j] = self.minf
+                    elif new_pos[j] > self.maxf:
+                        new_pos[j] = self.maxf
+                    cost = self.objective_function(new_pos)
+                    self.optimum_cost_tracking_eval.append(self.gbest.cost)
+                    fit = self.calculate_fitness(cost)
+
+                    if fit < self.food_sources[s].fitness and (self.food_sources[s].cost - cost) >= 0.0001:
+                        self.food_sources[s].pos = new_pos
+                        self.food_sources[s].cost = cost
+                        self.food_sources[s].fitness = fit
+                        self.food_sources[s].trials = 0
+                    else:
+                        self.food_sources[s].trials += 1
 
     def get_max_trial(self):
         max_ = 0

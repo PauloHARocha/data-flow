@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 from algorithms.clustering.metrics import Metrics
 
 
@@ -8,13 +9,14 @@ def exec_metric(experiment, algorithm, k_min, k_max, n_sim, metric):
 
     alg_name = algorithm.__str__()
     data_file = pd.read_csv(f"booking/{experiment}/data.csv")
-    met_results = []
+    
     
     k_range = range(k_min, k_max+1)
-    for k in k_range:
+    for k in tqdm(k_range, desc=f"{metric}:"):
         met_path = f"booking/{experiment}/{alg_name}/{k}/metrics"
         if not os.path.exists(met_path):
             os.mkdir(met_path)
+        met_results = []
         for n in range(n_sim):
             centroid_file = pd.read_csv(
                 f"booking/{experiment}/{alg_name}/{k}/centroids_sim_{n}.csv")
@@ -37,3 +39,4 @@ def exec_metric(experiment, algorithm, k_min, k_max, n_sim, metric):
         save_met_output['mean'] = [np.mean(met_results)]
         save_met_output['std'] = [np.std(met_results)]
         save_met_output.to_csv(output_file)
+

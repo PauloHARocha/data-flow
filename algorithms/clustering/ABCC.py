@@ -1,15 +1,17 @@
 import numpy as np
 from ..optimization.ABC import ABC
+from .metrics import Metrics
 
 
 class ABCCObjectiveFunction:
-    def __init__(self, data, k, n_attributes, evaluation_metric):
+    def __init__(self, data, k, n_attributes, metric_type, evaluation_metric):
         self.function = self.evaluate
         self.minf = 0.0
         self.maxf = 1.0
         self.k = k
         self.n_attributes = n_attributes
         self.data = data
+        self.metric_type = metric_type
         self.evaluation_metric = evaluation_metric
 
     def evaluate(self, x):
@@ -26,7 +28,8 @@ class ABCCObjectiveFunction:
             class_ = dist.index(min(dist))
             clusters[class_].append(xi)
 
-        return self.evaluation_metric(self.data, centroids, clusters)
+        return Metrics.evaluate(self.evaluation_metric, self.data, centroids, clusters)
+        # return self.evaluation_metric(data=self.data, centroids=centroids, clusters=clusters)
 
 
 # def sse(centroids, clusters):
@@ -51,19 +54,20 @@ def squared_euclidean_dist(u, v):
 
 
 class ABCC(object):
-    def __init__(self, k=2, swarm_size=50, n_iter=20, trials_limit=100, evaluation_metric=None):
+    def __init__(self, k=2, swarm_size=50, n_iter=20, trials_limit=100, metric_type='min',evaluation_metric=None):
         self.k = k
         self.swarm_size = swarm_size
         self.n_iter = n_iter
         self.trials_limit = trials_limit
         self.evaluation_metric = evaluation_metric
+        self.metric_type = metric_type
 
     def fit(self, data, k):
         self.k = k
 
         self.n_attributes = data.shape[1]
 
-        self.abc = ABC(ABCCObjectiveFunction(data, self.k, self.n_attributes, self.evaluation_metric),
+        self.abc = ABC(ABCCObjectiveFunction(data, self.k, self.n_attributes, self.metric_type, self.evaluation_metric),
                        dim=self.k * self.n_attributes,
                        colony_size=self.swarm_size,
                        n_iter=self.n_iter,
@@ -103,4 +107,4 @@ class ABCC(object):
         return clusters
 
     def __str__(self):
-        return "ABCC"
+        return f"ABCC-{self.evaluation_metric}"

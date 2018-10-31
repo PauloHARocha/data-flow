@@ -8,7 +8,8 @@ def pre_process(dataset, experiment, rows=[], columns=[], normalization=False):
     ds = { #Available datasets
         'iris': pd.DataFrame(datasets.load_iris().data[:, :]),
         'wine': pd.DataFrame(datasets.load_wine().data[:, :]),
-        'alzheimer': pd.read_csv("datasets/dataPhDAlzheimerSemNomes.csv")}
+        # 'alzheimer': pd.read_csv("datasets/dataPhDAlzheimerSemNomes.csv")
+        }
 
     if rows and columns: #Select rows and columns
         data = ds[dataset].iloc[rows, columns]

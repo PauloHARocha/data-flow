@@ -105,6 +105,18 @@ class ABCC(object):
             clusters[class_].append(xi)
 
         return clusters
+    
+    def predict(self, x):
+        if len(x.shape) > 1:
+            class_ = []
+            for c in self.centroids:
+                class_.append(np.sum((x - self.centroids[c]) ** 2, axis=1))
+            return np.argmin(np.array(class_).T, axis=1)
+        else:
+            dist = [np.linalg.norm(x - self.centroids[c])
+                    for c in self.centroids]
+            class_ = dist.index(min(dist))
+            return class_
 
     def __str__(self):
         return f"ABCC-{self.evaluation_metric}"

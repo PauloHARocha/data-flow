@@ -360,7 +360,8 @@ class Metrics:
         for k in range(len(centroids)):
             if len(clusters[k]) > 0:
                 cs += truediv(max_k, len(clusters[k]))
-        cs = truediv(cs, min_sum)
+        if min_sum > 0:
+            cs = truediv(cs, min_sum)
         return cs
     
     #Min-Max cut
@@ -443,7 +444,6 @@ class Metrics:
             return Metrics.min_max_cut(dataset, centroids, clusters)
         elif metric == 'gap':
             random_data = np.random.uniform(0, 1, dataset.shape)
-            ag_aux = algorithm(data=random_data)
-            ag_aux.fit(k=k)
-            random_clusters = ag_aux.clusters
+            algorithm.fit(data=random_data, k=k)
+            random_clusters = algorithm.clusters
             return Metrics.gap_statistic(clusters, random_clusters)

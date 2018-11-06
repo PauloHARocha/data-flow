@@ -22,7 +22,8 @@ def exec_metric(experiment, algorithm, k_min, k_max, n_sim, metric):
                 f"booking/{experiment}/{alg_name}/{k}/centroids_sim_{n}.csv")
             
             met_results.append(Metrics.evaluate(
-                metric, data_file.values[:, 1:], centroid_file.values[:, 1:]))
+                metric, data_file.values[:, 1:], centroid_file.values[:, 1:]
+                , algorithm=algorithm))
 
         met_path = f"{met_path}/{metric}"
         if not os.path.exists(met_path):

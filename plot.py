@@ -14,10 +14,15 @@ class Plot():
         self.k_max = k_max
         self.colors = ['red', 'green', 'blue',
                                 'yellow', 'brown', 'gray', 'orange', 'purple']
-    
+        self.check_path(f"{self.exp_path}/plots")
+
     @property
     def exp_path(self):
         return f"booking/{self.experiment}"
+    
+    def check_path(self, path):
+        if not os.path.exists(path):
+            os.mkdir(path)
     
     def plot_data_distribution(self): 
         data = pd.read_csv(f"{self.exp_path}/data.csv")
@@ -93,7 +98,7 @@ class Plot():
                 if xf < yf:
                     plt.figure()
                     for i in range(len(class_)):
-                        plt.scatter(data[i][xf], data[i][yf], color=self.colors[class_[i]], s=10)
+                        plt.scatter(data[i][xf], data[i][yf], color=self.colors[int(class_[i])], s=10)
                     plt.xlabel(features[xf])
                     plt.ylabel(features[yf])
                     plt.tight_layout()

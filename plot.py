@@ -1,4 +1,4 @@
-import os
+import os, math
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 import pandas as pd
@@ -37,20 +37,29 @@ def plot_k_range_all(experiment, algorithms, k_min, k_max, met):
     k_range = range(k_min, k_max+1)
     plot_mean = []
     plot_std = []
+    df = pd.DataFrame()
+    row_alg = []
     for algorithm in algorithms:
         print(algorithm)
         mean = []
         std = []
         for k in k_range:
+            row_alg.append(f"{algorithm.__str__()}_k_{k}")
             met_path = f"booking/{experiment}/{algorithm.__str__()}/{k}/metrics"
             met_file = f"{met_path}/{met}/output.csv"
-            met_data = pd.read_csv(met_file)
-            mean.append(met_data.values[:,3][0])
-            std.append(met_data.values[:, 4][0])
+            if os.path.exists(met_file):
+                met_data = pd.read_csv(met_file)
+                mean.append(met_data.values[:,3][0])
+                std.append(met_data.values[:, 4][0])
+                # print(f"{algorithm.__str__()} / {k} / {met} / mean: {met_data.values[:,3][0]} / std: {met_data.values[:, 4][0]}")
+            else:
+                mean.append(math.inf)
+                std.append(math.inf)
             
         plot_mean.append(mean)
         plot_std.append(std)
-        
+    df['algorithms'] = row_alg
+    df.to_csv(f"booking/{experiment}/table.csv", index=False)
     plot_path = f"booking/{experiment}/plots"
     if not os.path.exists(plot_path):
         os.mkdir(plot_path)
@@ -101,15 +110,16 @@ def plot_data_distribution(experiment):
     data = pd.read_csv(data_path)
     features = data.columns.values[1:]
 
+    figure_name = f"booking/{experiment}/plots/distribution_all_features.png"
+    plt.figure()
     for i in range(len(features)):
-        figure_name = f"booking/{experiment}/plots/distribution_{features[i]}.png"
         h = data.values[:, i + 1]
         h.sort()
         hmean = np.mean(h)
         hstd = np.std(h)
         pdf = stats.norm.pdf(h, hmean, hstd)
-        plt.figure()
-        plt.plot(h, pdf)
-        plt.title(f"{features[i]}", fontsize=20)
-        plt.tight_layout()
-        plt.savefig(figure_name)
+        plt.plot(h, pdf, label=features[i])
+    plt.title(f"Data distribution", fontsize=20)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(figure_name)

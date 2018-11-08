@@ -93,14 +93,23 @@ class Plot():
 
         class_ = pd.read_csv(clusters_path)
         class_ = class_.values[:, n+1]
+        id_ = []
+        for i in range(k):
+            id_.append(np.where(class_ == i)[0].tolist())
+            
         for xf in range(len(features)):
             for yf in range(len(features)):
                 if xf < yf:
                     plt.figure()
-                    for i in range(len(class_)):
-                        plt.scatter(data[i][xf], data[i][yf], color=self.colors[int(class_[i])], s=10)
+                    for i in range(len(id_)):
+                        plt.scatter([d[xf] for d in data[id_[i]]],
+                                    [d[yf] for d in data[id_[i]]],
+                                    color=self.colors[i],
+                                    label=f"{len(id_[i])}" , 
+                                    s=10)
                     plt.xlabel(features[xf])
                     plt.ylabel(features[yf])
+                    plt.legend()
                     plt.tight_layout()
                     plt.savefig(
                         f"{plot_path}/clusters_k{k}_sim{n}_x{features[xf]}_y{features[yf]}.png")

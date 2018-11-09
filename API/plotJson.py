@@ -30,13 +30,13 @@ class Plot():
             hstd = np.std(h)
             pdf = stats.norm.pdf(h, hmean, hstd)
             res.append({
-                'feature': features[i],
+                'legend': features[i],
+                'labelX': 'h',
+                'labelY': 'pdf',
                 'x': {
-                    'label': 'h',
                     'values': h.tolist()
                 },
                 'y': {
-                    'label': 'pdf',
                     'values': pdf.tolist()
                 }
             })
@@ -97,6 +97,8 @@ class Plot():
                         std.append(math.inf)
                 alg.append({
                     'legend': algorithm,
+                    'labelX': 'k',
+                    'labelY': 'value',
                     'x': {
                         'values': list(k_range)
                     },
@@ -105,8 +107,6 @@ class Plot():
                     }
                 })
             res.append({
-                'labelX': 'k',
-                'labelY': 'value',
                 'legend': met,
                 'algorithms': alg
             })

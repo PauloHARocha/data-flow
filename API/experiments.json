@@ -7,7 +7,10 @@
             "algorithms": [
                 {
                     "name": "Fuzz C-Means",
-                    "value": "FC-means"
+                    "value": "FC-means",
+                    "description": "Fuzz C-Means",
+                    "k": [2, 3],
+                    "n_sim": 5
                 }
             ]
         }

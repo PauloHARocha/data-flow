@@ -25,5 +25,12 @@ def PlotDistribution(exp):
     res = plot.plot_data_distribution()
     return json.dumps(res)
 
+@app.route("/experiment/<exp>/algorithm/<alg>/<k>/clusters")
+def PlotClusters(exp, alg, k):
+    plot = Plot(experiment=str(exp))
+    res = plot.plot_clusters(alg, k=int(k))
+    print(res)
+    return json.dumps(res)
+
 if __name__ == '__main__':
     app.run(debug=True)

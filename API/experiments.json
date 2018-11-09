@@ -1,0 +1,15 @@
+{
+    "experiments": [
+        {
+            "name": "ACS",
+            "value": "Acs-Education",
+            "description": "ACS dataset provided by US Census Bureau",
+            "algorithms": [
+                {
+                    "name": "Fuzz C-Means",
+                    "value": "FC-means"
+                }
+            ]
+        }
+    ]
+}

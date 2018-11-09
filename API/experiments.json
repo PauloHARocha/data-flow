@@ -12,6 +12,12 @@
                     "k": [2, 3],
                     "n_sim": 5
                 }
+            ],
+            "metrics": ["inter-cluster", "cluster-separation", "abgss",
+           "edge-index", "cluster-connectedness", "intra-cluster",
+           "ball-hall", "intracluster-entropy", "ch-index", "hartigan",
+           "xu-index", "wb-index", "dunn-index", "davies-bouldin", "cs-measure",
+           "silhouette", "min-max-cut"
             ]
         }
     ]

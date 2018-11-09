@@ -76,3 +76,39 @@ class Plot():
                         })
                     res.append(clusters)
         return res
+    
+    def plot_k_range(self):
+        k_range = range(self.k_min, self.k_max+1)
+        res = []
+        for met in self.metrics:
+            alg = []
+            for algorithm in self.algorithms:
+                mean = []
+                std = []
+                for k in k_range:
+                    met_path = f"{self.exp_path}/{algorithm}/{k}/metrics"
+                    met_file = f"{met_path}/{met}/output.csv"
+                    if os.path.exists(met_file):
+                        met_data = pd.read_csv(met_file)
+                        mean.append(met_data.values[:, 3][0])
+                        std.append(met_data.values[:, 4][0])
+                    else:  # In case have missing values
+                        mean.append(math.inf)
+                        std.append(math.inf)
+                alg.append({
+                    'legend': algorithm,
+                    'x': {
+                        'values': list(k_range)
+                    },
+                    'y': {
+                        'values': mean
+                    }
+                })
+            res.append({
+                'labelX': 'k',
+                'labelY': 'value',
+                'legend': met,
+                'algorithms': alg
+            })
+
+        return res

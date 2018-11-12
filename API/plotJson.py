@@ -21,10 +21,10 @@ class Plot():
 
     def plot_data_distribution(self):
         data = pd.read_csv(f"{self.exp_path}/data.csv")
-        features = data.columns.values[1:]
+        features = data.columns.values[:]
         res = []
         for i in range(len(features)):
-            h = data.values[:, i + 1]
+            h = data.values[:, i]
             h.sort()
             hmean = np.mean(h)
             hstd = np.std(h)
@@ -49,11 +49,11 @@ class Plot():
         clusters_path = f"{self.exp_path}/{algorithm}/{k}/clusters.csv"
 
         data = pd.read_csv(data_path)
-        features = data.columns.values[1:]
-        data = data.values[:, 1:]
-
+        features = data.columns.values[:]
+        data = data.values[:, :]
         class_ = pd.read_csv(clusters_path)
         class_ = class_.values[:, n+1]
+    
         id_ = []
         for i in range(k):
             id_.append(np.where(class_ == i)[0].tolist())
@@ -68,10 +68,10 @@ class Plot():
                             'labelY': features[yf],
                             'legend': len(id_[i]),
                             'x': {
-                                'values': [int(d[xf]) for d in data[id_[i]]]
+                                'values': [float(d[xf]) for d in data[id_[i]]]
                             },
                             'y': {
-                                'values': [int(d[yf]) for d in data[id_[i]]]
+                                'values': [float(d[yf]) for d in data[id_[i]]]
                             }
                         })
                     res.append(clusters)
@@ -157,12 +157,12 @@ class Plot():
         # Loop over data dimensions and create text annotations.
         for i in range(len(row_labels)):
             for j in range(len(column_labels)):
-                ax.text(j, i, data[i, j].astype(np.float32),
-                            ha="center", va="center", color="w", fontsize=6)
+                ax.text(j, i, round(data[i, j].astype(np.float32),2),
+                            ha="center", va="center", color="w", fontsize=5)
 
         ax.set_title("Correlation Matrix")
         plt.tight_layout()
         fig_name = f"{self.exp_path}/corr_matrix_metrics.png"
-        plt.savefig(fig_name)
+        plt.savefig(fig_name, dpi=(200))
 
         return fig_name

@@ -1,5 +1,5 @@
 import json
-from flask import Flask, send_file
+from flask import Flask, send_file, request
 from flask_cors import CORS
 from API.plotJson import Plot
 
@@ -17,7 +17,6 @@ def Experiments():
         data = json.load(f)
         f.close()
     return json.dumps(data)
-
 
 @app.route("/experiment/<exp>/plot")
 def PlotDistribution(exp):
@@ -38,17 +37,28 @@ metrics = ['inter-cluster', 'cluster-separation', 'abgss',
            'xu-index', 'wb-index', 'dunn-index', 'davies-bouldin', 'cs-measure',
            'silhouette', 'min-max-cut']
 
-@app.route("/experiment/<exp>/algorithm/<alg>/<kmin>/<kmax>/metrics")
-def PlotMetrics(exp, alg, kmin, kmax):
+
+@app.route("/experiment/<exp>/metrics", methods=['GET', 'POST'])
+def PlotMetrics(exp):
+    algorithms = request.get_json()
+    kmin= min(algorithms[0]['k'])
+    kmax= max(algorithms[0]['k'])
     plot = Plot(experiment=str(exp), 
-    algorithms=[alg], metrics=metrics, k_min=int(kmin), k_max=int(kmax))
+                algorithms=[alg['value'] for alg in algorithms], 
+                metrics=metrics, k_min=kmin, k_max=kmax)
+
     res = plot.plot_k_range()
     return json.dumps(res)
 
-@app.route("/experiment/<exp>/metrics/corr")
+
+@app.route("/experiment/<exp>/metrics/corr", methods=['GET', 'POST'])
 def PlotCorrMatrix(exp):
+    algorithms = request.get_json()
+    kmin= min(algorithms[0]['k'])
+    kmax= max(algorithms[0]['k'])
     plot = Plot(experiment=str(exp), 
-    algorithms=['FC-means'], metrics=metrics, k_min=2, k_max=3)
+                algorithms=[alg['value'] for alg in algorithms],
+                metrics=metrics, k_min=kmin, k_max=kmax)
     filename = plot.gen_corr_df()
     return send_file(filename, mimetype='image/gif')
 

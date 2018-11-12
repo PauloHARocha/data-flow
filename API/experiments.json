@@ -19,6 +19,47 @@
            "xu-index", "wb-index", "dunn-index", "davies-bouldin", "cs-measure",
            "silhouette", "min-max-cut"
             ]
+        },
+        {
+            "name": "Iris ABCC",
+            "value": "iris-abcc",
+            "description": "Iris dataset",
+            "algorithms": [
+                {
+                    "name": "ABCC ch-index",
+                    "value": "ABCC-ch-index",
+                    "description": "ABCC with Calinsk-Harabaz index as fitness function",
+                    "k": [2, 3, 4, 5, 6, 7, 8],
+                    "n_sim": 30
+                },
+                {
+                    "name": "ABCC davies-bouldin",
+                    "value": "ABCC-davies-bouldin",
+                    "description": "ABCC with Davies Boldin as fitness function",
+                    "k": [2, 3, 4, 5, 6, 7, 8],
+                    "n_sim": 30
+                },
+                {
+                    "name": "ABCC intra-cluster",
+                    "value": "ABCC-intra-cluster",
+                    "description": "ABCC with intra-cluster as fitness function",
+                    "k": [2, 3, 4, 5, 6, 7, 8],
+                    "n_sim": 30
+                },
+                {
+                    "name": "Fuzz C-Means",
+                    "value": "FC-means",
+                    "description": "Fuzz C-Means",
+                    "k": [2, 3, 4, 5, 6, 7, 8],
+                    "n_sim": 5
+                }
+            ],
+            "metrics": ["inter-cluster", "cluster-separation", "abgss",
+           "edge-index", "cluster-connectedness", "intra-cluster",
+           "ball-hall", "intracluster-entropy", "ch-index", "hartigan",
+           "xu-index", "wb-index", "dunn-index", "davies-bouldin", "cs-measure",
+           "silhouette", "min-max-cut"
+            ]
         }
     ]
 }

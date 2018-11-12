@@ -9,8 +9,8 @@ class PreProcess():
     def __init__(self, experiment):
         self.experiment = experiment
         self.ds = {  # Available datasets
-            'iris': pd.DataFrame(datasets.load_iris().data[:, :]),
-            'wine': pd.DataFrame(datasets.load_wine().data[:, :]),
+            'iris': pd.DataFrame(datasets.load_iris()['data'][:, :]),
+            'wine': pd.DataFrame(datasets.load_wine()['data'][:, :]),
             'acs': pd.read_csv("datasets/acs_16_5_county.csv")
             # 'alzheimer': pd.read_csv("datasets/dataPhDAlzheimerSemNomes.csv")
         }
@@ -30,6 +30,9 @@ class PreProcess():
         
         if not os.path.exists(self.exp_path): #Create directory of experiment
             os.mkdir(self.exp_path)
+            
+        if ds_name == 'iris' or ds_name == 'wine':
+            self.data.columns = datasets.load_iris()['feature_names']
 
         self.data.to_csv(f"{self.exp_path}/data.csv", index=False)#Save data
 

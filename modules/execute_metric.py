@@ -23,7 +23,6 @@ class ExecMetric():
         for met in self.metrics:
             for k in tqdm(k_range, desc=f"{met}:"):
                 metrics_path = f"{self.exp_path}/{alg_name}/{k}/metrics"
-                print(metrics_path)
                 self.check_path(metrics_path)
 
                 met_results = []

@@ -112,3 +112,57 @@ class Plot():
             })
 
         return res
+
+    def gen_corr_df(self):
+        k_range = range(self.k_min, self.k_max+1)
+        cd = pd.DataFrame()
+        for met in self.metrics:
+            for algorithm in self.algorithms:
+                mean = []
+                for k in k_range:
+                    met_path = f"{self.exp_path}/{algorithm}/{k}/metrics"
+                    met_file = f"{met_path}/{met}/output.csv"
+                    if os.path.exists(met_file):
+                        met_data = pd.read_csv(met_file)
+                        mean.append(met_data.values[:, 3][0])
+            cd[met] = mean
+            
+        cd.to_csv(f"{self.exp_path}/before_corr_metrics.csv", index=False)
+        cd = cd.corr()
+        cd.to_csv(f"{self.exp_path}/corr_metrics.csv", index=False)
+
+        
+        data = cd.values
+        
+        column_labels = cd.columns
+        row_labels = cd.index
+
+        fig, ax = plt.subplots()
+
+        im = ax.imshow(data, cmap=plt.cm.coolwarm)
+        fig.colorbar(im)
+
+        # We want to show all ticks...
+        ax.set_xticks(np.arange(len(column_labels)))
+        ax.set_yticks(np.arange(len(row_labels)))
+        
+        # ... and label them with the respective list entries
+        ax.set_xticklabels(column_labels)
+        ax.set_yticklabels(row_labels)
+
+        # Rotate the tick labels and set their alignment.
+        plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+                rotation_mode="anchor")
+
+        # Loop over data dimensions and create text annotations.
+        for i in range(len(row_labels)):
+            for j in range(len(column_labels)):
+                ax.text(j, i, data[i, j].astype(np.float32),
+                            ha="center", va="center", color="w", fontsize=6)
+
+        ax.set_title("Correlation Matrix")
+        plt.tight_layout()
+        fig_name = f"{self.exp_path}/corr_matrix_metrics.png"
+        plt.savefig(fig_name)
+
+        return fig_name

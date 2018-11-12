@@ -31,7 +31,7 @@ class PreProcess():
         if not os.path.exists(self.exp_path): #Create directory of experiment
             os.mkdir(self.exp_path)
 
-        self.data.to_csv(f"{self.exp_path}/data.csv")#Save data
+        self.data.to_csv(f"{self.exp_path}/data.csv", index=False)#Save data
 
         config = pd.DataFrame()
         config['dataset'] = [ds_name]

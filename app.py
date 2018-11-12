@@ -1,5 +1,5 @@
 import json
-from flask import Flask
+from flask import Flask, send_file
 from flask_cors import CORS
 from API.plotJson import Plot
 
@@ -44,6 +44,13 @@ def PlotMetrics(exp, alg, kmin, kmax):
     algorithms=[alg], metrics=metrics, k_min=int(kmin), k_max=int(kmax))
     res = plot.plot_k_range()
     return json.dumps(res)
+
+@app.route("/experiment/<exp>/metrics/corr")
+def PlotCorrMatrix(exp):
+    plot = Plot(experiment=str(exp), 
+    algorithms=['FC-means'], metrics=metrics, k_min=2, k_max=3)
+    filename = plot.gen_corr_df()
+    return send_file(filename, mimetype='image/gif')
 
 if __name__ == '__main__':
     app.run(debug=True)

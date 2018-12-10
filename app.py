@@ -24,18 +24,38 @@ def PlotDistribution(exp):
     res = plot.plot_data_distribution()
     return json.dumps(res)
 
+
+@app.route("/experiment/<exp>/algorithm/<alg>/<k>/classdist")
+def PlotClassDistribution(exp, alg, k):
+    plot = Plot(experiment=str(exp))
+    res = plot.plot_class_distribution(alg, k=int(k))
+    return json.dumps(res)
+
 @app.route("/experiment/<exp>/algorithm/<alg>/<k>/clusters")
 def PlotClusters(exp, alg, k):
     plot = Plot(experiment=str(exp))
     res = plot.plot_clusters(alg, k=int(k))
     return json.dumps(res)
 
+@app.route("/experiment/<exp>/algorithm/<alg>/<k>/corr")
+def PlotClassCorr(exp, alg, k):
+    plot = Plot(experiment=str(exp))
+    res = plot.plot_class_corr(alg, k=int(k))
+    return json.dumps(res)
 
-metrics = ['inter-cluster', 'cluster-separation', 'abgss',
-           'edge-index', 'cluster-connectedness', 'intra-cluster',
-           'ball-hall', 'intracluster-entropy', 'ch-index', 'hartigan',
-           'xu-index', 'wb-index', 'dunn-index', 'davies-bouldin', 'cs-measure',
-           'silhouette', 'min-max-cut']
+@app.route("/experiment/<exp>/imagecorr/<path>")
+def ImageClassCorr(exp, path):
+    return send_file(f"booking/{exp}/{path}", mimetype='image/gif')
+
+
+# metrics = ['inter-cluster', 'cluster-separation', 'abgss',
+#            'edge-index', 'cluster-connectedness', 'intra-cluster',
+#            'ball-hall', 'intracluster-entropy', 'ch-index', 'hartigan',
+#            'xu-index', 'wb-index', 'dunn-index', 'davies-bouldin', 'cs-measure',
+#            'silhouette', 'min-max-cut', 'gap']
+metrics = [
+           'edge-index', 'ch-index', 
+           'silhouette', 'min-max-cut', 'gap']
 
 
 @app.route("/experiment/<exp>/metrics", methods=['GET', 'POST'])

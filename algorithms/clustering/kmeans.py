@@ -15,11 +15,11 @@ class KMeans:
 
     # Initialize the centroids randomly based on the position of the data
     def init_centroids(self):
-        # r = np.random.permutation(self.data.shape[0])
-        # for k in range(self.k):
-        #     self.centroids[k] = self.data[r[k]]
+        r = np.random.permutation(self.data.shape[0])
         for k in range(self.k):
-            self.centroids[k] = np.random.random(self.data.shape[1])
+            self.centroids[k] = self.data[r[k]]
+        # for k in range(self.k):
+        #     self.centroids[k] = np.random.random(self.data.shape[1])
 
     def fit(self, data=None, k=None):
 

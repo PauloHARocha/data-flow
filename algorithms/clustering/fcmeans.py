@@ -18,7 +18,7 @@ class FCMeans(object):
         self.centroids = {}
         for k in range(self.k):
             self.centroids[k] = np.random.random(self.data.shape[1])
-
+        
         self.degree_of_membership = np.zeros((self.data.shape[0], self.k))
         for idx_ in self.centroids:
             for idx, xi in enumerate(self.data):
@@ -40,9 +40,9 @@ class FCMeans(object):
 
         for iteration in range(self.n_iter):
             
-            self.all_centroids[iteration] = dict(self.centroids)
-            self.get_clusters()
-            self.all_clusters[iteration] = self.clusters
+            # self.all_centroids[iteration] = dict(self.centroids)
+            # self.get_clusters()
+            # self.all_clusters[iteration] = self.clusters
 
             powers = np.power(self.degree_of_membership, self.fuzzy_c)
             for idx_ in self.centroids:
@@ -93,6 +93,8 @@ class FCMeans(object):
 
         for data, cluster in zip(self.data, _class):
             self.clusters[cluster].append(data)
+        
+        return self.clusters
 
     def __str__(self):
         return 'FC-means'

@@ -18,7 +18,7 @@ class ExecAlgorithm():
 
     def run(self):
         data_file = pd.read_csv(f"{self.exp_path}/data.csv")
-        data = data_file.values[:, 1:]  # select values from data
+        data = data_file.values  # select values from data
 
         for algorithm in self.algorithms:
             algorithm_path = f"{self.exp_path}/{algorithm.__str__()}"
@@ -48,7 +48,7 @@ class ExecAlgorithm():
 
         centroids_df = pd.DataFrame(centroids)
         centroids_df = centroids_df.transpose()
-        centroids_df.to_csv(centroids_file)
+        centroids_df.to_csv(centroids_file, index=False)
     
     def save_clusters(self, clusters_path, n, algorithm, data):
         clusters_df = pd.read_csv(clusters_path)

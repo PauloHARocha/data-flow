@@ -31,7 +31,7 @@ class ExecMetric():
                         f"{self.exp_path}/{alg_name}/{k}/centroids_sim_{n}.csv")
                     
                     met_results.append(Metrics.evaluate(
-                        met, data_file.values[:, 1:], centroid_file.values[:, 1:]
+                        met, data_file.values, centroid_file.values
                         , algorithm=algorithm))
 
                 met_path = f"{metrics_path}/{met}"
@@ -43,7 +43,7 @@ class ExecMetric():
     def save_results(self, path, results):
         filename = f"{path}/results.csv"
         results = pd.DataFrame(results)
-        results.to_csv(filename)
+        results.to_csv(filename, index=False)
 
     def save_output(self, path, alg_name, k, results):
         filename = f"{path}/output.csv"

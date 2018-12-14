@@ -11,8 +11,8 @@ class PreProcess():
         self.ds = {  # Available datasets
             'iris': pd.DataFrame(datasets.load_iris()['data'][:, :]),
             'wine': pd.DataFrame(datasets.load_wine()['data'][:, :]),
-            'acs': pd.read_csv("datasets/acs_16_5_county.csv")
-            # 'alzheimer': pd.read_csv("datasets/dataPhDAlzheimerSemNomes.csv")
+            'acs': pd.read_csv("datasets/acs_16_5_county.csv"),
+            'alzheimer': pd.read_csv("datasets/dataPhDAlzheimerSemNomes.csv")
         }
     
     @property

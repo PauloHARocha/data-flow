@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 from algorithms.clustering.metrics import Metrics
+from sklearn.metrics import silhouette_score, silhouette_samples
 
 class ExecMetric():
 
@@ -20,40 +21,88 @@ class ExecMetric():
         data_file = pd.read_csv(f"{self.exp_path}/data.csv")
         
         k_range = range(k_min, k_max+1)
-        for met in self.metrics:
-            for k in tqdm(k_range, desc=f"{met}:"):
-                metrics_path = f"{self.exp_path}/{alg_name}/{k}/metrics"
-                self.check_path(metrics_path)
-
+        
+        all_metrics_df = pd.DataFrame()
+        for k in tqdm(k_range, desc=f"k:"):
+            metric_df = pd.DataFrame()
+            for met in self.metrics:
                 met_results = []
+                if met == 'silhouette':
+                    s_sil_df = pd.DataFrame()
                 for n in range(n_sim):
-                    centroid_file = pd.read_csv(
-                        f"{self.exp_path}/{alg_name}/{k}/centroids_sim_{n}.csv")
+                    clusters_labels = pd.read_csv(
+                        f"{self.exp_path}/{alg_name}/{k}/{algorithm.__str__()}_k{k}_clusters_labels.csv")
                     
-                    met_results.append(Metrics.evaluate(
-                        met, data_file.values, centroid_file.values
-                        , algorithm=algorithm))
+                    n_sim_labels = clusters_labels[f'sim_{n}']
+                    
+                    centroids = self.get_centroids(n_sim_labels, data_file, k)
+                    if met == 'silhouette':
+                        met_results.append(silhouette_score(data_file.drop(columns='labels').values, 
+                                                n_sim_labels))
+                        sample_silhouette_values = silhouette_samples(
+                            data_file.drop(columns='labels').values, n_sim_labels)
+                        s_sil_df[f'silhouette_samples_sim_{n}'] = sample_silhouette_values 
+                        s_sil_df[f'labels_sim_{n}'] = n_sim_labels
+                    else:
+                        met_results.append(Metrics.evaluate(met, 
+                                        data_file.drop(columns='labels').values, 
+                                        centroids, 
+                                        algorithm=algorithm))
+        
+                metric_df[f'{met}'] = met_results
+                if met == 'silhouette':
+                    s_sil_df.to_csv(f"{self.exp_path}/{alg_name}/{k}/{alg_name}_k{k}_silhouette_samples.csv", index=False) 
 
-                met_path = f"{metrics_path}/{met}"
-                self.check_path(met_path)
+            metric_df = metric_df.assign(k=k)
+            metric_df = metric_df.assign(algorithm=alg_name)
+            metrics_path = f"{self.exp_path}/{alg_name}/{k}/{alg_name}_k{k}_metrics_results.csv"
+            metric_df.to_csv( metrics_path, index=False)
+            all_metrics_df = pd.concat([all_metrics_df, metric_df])
+        all_metrics_df.to_csv(f'{self.exp_path}/{alg_name}/{alg_name}_all_metrics_results.csv', index=False)
+                
+    def run_from_sklearn(self, linkage, k_min=2, k_max=2):
+        alg_name = f'AGL-{linkage}'
+        data_file = pd.read_csv(f"{self.exp_path}/data.csv")
+        
+        k_range = range(k_min, k_max+1)
+        
+        all_metrics_df = pd.DataFrame()
+        for k in tqdm(k_range, desc=f"k:"):
+            metric_df = pd.DataFrame()
+            for met in self.metrics:
+                
+                clusters_labels = pd.read_csv(
+                    f"{self.exp_path}/{alg_name}/{k}/{alg_name}_k{k}_clusters_labels.csv")
+                
+                n_sim_labels = clusters_labels[f'sim_{0}']
+                
+                centroids = self.get_centroids(n_sim_labels, data_file, k)
+                if met == 'silhouette':
+                    result = silhouette_score(data_file.drop(columns='labels').values, 
+                                                n_sim_labels)
+                    sample_silhouette_values = silhouette_samples(
+                        data_file.drop(columns='labels').values, n_sim_labels)
+                    s_sil_df = pd.DataFrame()
+                    s_sil_df['silhouette_samples_sim_0'] = sample_silhouette_values 
+                    s_sil_df['labels_sim_0'] = n_sim_labels
+                    s_sil_df.to_csv(f"{self.exp_path}/{alg_name}/{k}/{alg_name}_k{k}_silhouette_samples.csv", index=False) 
+                else:
+                    result = Metrics.evaluate(met, data_file.drop(columns='labels').values, 
+                                        centroids)
+                metric_df[f'{met}'] = [result]
 
-                self.save_results(met_path, met_results)
-                self.save_output(met_path, alg_name, k, met_results)
+            metric_df = metric_df.assign(k=k)
+            metric_df = metric_df.assign(algorithm=alg_name)
+            metrics_path = f"{self.exp_path}/{alg_name}/{k}/{alg_name}_k{k}_metrics_results.csv"
+            metric_df.to_csv( metrics_path, index=False)
+            all_metrics_df = pd.concat([all_metrics_df, metric_df])
+        all_metrics_df.to_csv(f'{self.exp_path}/{alg_name}/{alg_name}_all_metrics_results.csv', index=False)
+    
 
-    def save_results(self, path, results):
-        filename = f"{path}/results.csv"
-        results = pd.DataFrame(results)
-        results.to_csv(filename, index=False)
-
-    def save_output(self, path, alg_name, k, results):
-        filename = f"{path}/output.csv"
-        output = pd.DataFrame()
-        output['algorithm'] = [alg_name]
-        output['k'] = [k]
-        output['mean'] = [np.mean(results)]
-        output['std'] = [np.std(results)]
-        output.to_csv(filename)
-
-    def check_path(self, path):
-        if not os.path.exists(path):
-            os.mkdir(path)
+    def get_centroids(self, labels, data, n_clusters):
+        data['labels'] = labels
+        centroids = []
+        for k in range(n_clusters):
+            cluster = data.loc[data.labels == k].drop(columns='labels')
+            centroids.append(np.mean(cluster.values, axis=0))
+        return centroids

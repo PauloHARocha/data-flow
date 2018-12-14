@@ -1,12 +1,13 @@
 import os
 import pandas as pd
 from tqdm import tqdm
+from sklearn.cluster import AgglomerativeClustering
 
 class ExecAlgorithm():
 
-    def __init__(self, experiment, algorithms=[], k_min=2, k_max=2, n_sim=30):
+    def __init__(self, experiment, algorithm, k_min=2, k_max=2, n_sim=30):
         self.experiment = experiment
-        self.algorithms = algorithms
+        self.algorithm = algorithm
         self.k_min = k_min
         self.k_min = k_min
         self.k_max = k_max
@@ -20,43 +21,61 @@ class ExecAlgorithm():
         data_file = pd.read_csv(f"{self.exp_path}/data.csv")
         data = data_file.values  # select values from data
 
-        for algorithm in self.algorithms:
-            algorithm_path = f"{self.exp_path}/{algorithm.__str__()}"
-            self.check_path(algorithm_path)
+        algorithm_path = f"{self.exp_path}/{self.algorithm.__str__()}"
+        self.check_path(algorithm_path)
+        k_range = range(self.k_min, self.k_max+1)
 
-            k_range = range(self.k_min, self.k_max+1)
-            for k in tqdm(k_range, desc="k: "):
-                k_path = f"{algorithm_path}/{k}"
-                self.check_path(k_path)
-                        
-                clusters_df = pd.DataFrame()
-                clusters_df['data_points'] = data_file.values[:, 0]
-                clusters_path = f"{k_path}/clusters.csv"
-                clusters_df.to_csv(clusters_path, index=False)
+        for k in tqdm(k_range, desc="k: "):
+            k_path = f"{algorithm_path}/{k}"
+            self.check_path(k_path)
+                    
+            clusters_df = pd.DataFrame()
+            
+            for n in range(self.n_sim):
+                self.algorithm.fit(data=data, k=k)  # run algorithm
+                # self.save_centroids(k_path, n, algorithm.centroids)
+                clusters_df = self.save_clusters(clusters_df, n, self.algorithm, data)
 
-                for n in range(self.n_sim):
-                    algorithm.fit(data=data, k=k)  # run algorithm
+            clusters_path = f"{k_path}/{self.algorithm.__str__()}_k{k}_clusters_labels.csv"
+            clusters_df.to_csv(clusters_path, index=False)
 
-                    self.save_centroids(k_path, n, algorithm.centroids)
-                    self.save_clusters(clusters_path, n, algorithm, data)
+        self.save_config(self.k_min, self.k_max, self.n_sim, self.algorithm, algorithm_path)
 
-            self.save_config(
-                self.k_min, self.k_max, self.n_sim, algorithm, algorithm_path)
+            
+    def run_from_sklearn(self, linkage):
+        data_file = pd.read_csv(f"{self.exp_path}/data.csv")
+        data = data_file.values  # select values from data
+        alg_name = f'AGL-{linkage}'
+        algorithm_path = f"{self.exp_path}/{alg_name}"
+        self.check_path(algorithm_path)
+        k_range = range(self.k_min, self.k_max+1)
 
-    def save_centroids(self, k_path, n, centroids):
-        centroids_file = f"{k_path}/centroids_sim_{n}.csv"  # save centroids
+        for k in tqdm(k_range, desc="k: "):
+            k_path = f"{algorithm_path}/{k}"
+            self.check_path(k_path)
+                    
+            algorithm = AgglomerativeClustering(linkage=linkage, n_clusters=k)
+            algorithm.fit(data)    
+            
+            clusters_df = pd.DataFrame()
+            clusters_df['sim_0'] = algorithm.labels_
+            clusters_path = f"{k_path}/{alg_name}_k{k}_clusters_labels.csv"
+            clusters_df.to_csv(clusters_path, index=False)
 
-        centroids_df = pd.DataFrame(centroids)
-        centroids_df = centroids_df.transpose()
-        centroids_df.to_csv(centroids_file, index=False)
+        self.save_config(self.k_min, self.k_max, 1, linkage, algorithm_path)
+    # def save_centroids(self, k_path, n, centroids):
+    #     centroids_file = f"{k_path}/centroids_sim_{n}.csv"  # save centroids
+
+    #     centroids_df = pd.DataFrame(centroids)
+    #     centroids_df = centroids_df.transpose()
+    #     centroids_df.to_csv(centroids_file, index=False)
     
-    def save_clusters(self, clusters_path, n, algorithm, data):
-        clusters_df = pd.read_csv(clusters_path)
+    def save_clusters(self, clusters_df, n, algorithm, data):
         class_ = []
         for dataPoint in data:
             class_.append(algorithm.predict(dataPoint))
         clusters_df[f"sim_{n}"] = class_
-        clusters_df.to_csv(clusters_path, index=False)
+        return clusters_df
 
     def save_config(self, k_min, k_max, n_sim, algorithm, algorithm_path):
         config = pd.DataFrame()
